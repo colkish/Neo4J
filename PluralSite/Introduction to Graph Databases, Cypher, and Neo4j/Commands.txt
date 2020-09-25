@@ -45,3 +45,29 @@ MATCH (m:Actor{name:'Matt Smith'}),(c:Actor{name:'Christopher Eccleston'}) SET m
 MATCH (m:Actor{name:'Matt Smith'}) SET m:DOCTOR
 --Remove label:
 MATCH (m:Actor{name:'Matt Smith'}) REMOVE m:DOCTOR
+
+--to create if desn't exists use a merge:
+MERGE(p:Actor{name:'Peter Capaldi'}) RETURN p
+
+--Merges in Salary
+MERGE(p:Actor{name:'Peter Capaldi',Salary: 10000}) RETURN p
+
+--Loops
+MATCH p=(a:Actor)-[r:PLAYED]->(others) WHERE a.salary> 100000 FOREACH (n IN nodes(p)| set n.done = true)
+
+--Indexes:
+CREATE INDEX ON :Actor(name)
+
+--Would speed up:
+MATCH (m:Actor{name:'Matt Smith'}) RETURN m ;
+
+--drop it
+DROP INDEX ON :Actor(name)
+
+--only constrain can currently create are unique ones (als creates an implicit index) :
+--wiil fail if none unique values already exist
+CREATE CONSTRAINT ON (a:Actor) ASSERT a.name IS UNIQUE
+DROP CONSTRAINT ON (a:Actor) ASSERT a.name IS UNIQUE
+
+
+
