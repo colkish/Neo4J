@@ -1,0 +1,47 @@
+CALL apoc.import.graphml('drwho.graphml', {batchSize: 1000, storeNodeIds: false, readLabels: true})
+apoc.import.file.enabled=true
+
+DML:
+MATCH (:Actor{name:'Matt Smith'}) -[:PLAYED]->(c:Character) RETURN c.name as name
+
+Better way
+MATCH (a:Actor) -[:PLAYED]->(c:Character) WHERE a.name='Matt Smith' RETURN c.name as name
+
+MATCH(actors:Actor)-[:REGENERATED_TO]->(others) RETURN actors.name, others.name
+MATCH(:Character{name:'Doctor'})<-[:ENEMY_OF]-(:Character)-[:COMES_FROM]->(p:Planet) RETURN p.name AS Planet, count(p) AS Count
+MATCH (:Actor{name:'Matt Smith'})-[:APPEARED_IN]->(ep:Episode)<-[:APPEARED_IN]-(:Character{name:'Amy Pond'}),(ep)<-[:APPEARED_IN]-(enimies:Character)<-[:ENEMY_OF]-(:Character{name:'Doctor'}) RETURN ep AS Episode, collect(enimies.name) AS Enimies
+MATCH (:Actor{name:'Matt Smith'})-[:APPEARED_IN]->(ep:Episode)<-[:APPEARED_IN]-(:Character{name:'Amy Pond'}),(ep)<-[:APPEARED_IN]-(enemies:Character)<-[:ENEMY_OF]-(:Character{name:'Doctor'}) RETURN ep AS Episode, collect(enemies.name) AS Enemies
+MATCH(a:Actor)-[:PLAYED]->(c:Character) WHERE a.name = 'Matt Smith' RETURN c ORDER BY c.name DESC
+MATCH (a:Actor)-[:PLAYED]->(c:Character) WHERE a.name='Matt Smith' RETURN c LIMIT 10
+MATCH (a:Actor) WITH a.name AS name, count(a) AS count ORDER BY name WHERE count > 10 RETURN name
+MATCH (a:Actor) WHERE EXISTS ((a)-[:PLAYED]->()) RETURN a.name
+MATCH p=(:Actor)-[:PLAYED]->(:Character) RETURN LENGTH(p)
+MATCH p = (:Actor)-[:PLAYED]->(:Character) RETURN NODES(p)
+MATCH (:Episode)-[:PREVIOUS]-(e:Episode) RETURN e
+MATCH(:Episode)-->(e:Episode) RETURN e
+MATCH (:Actor)-[]->()-[]->(p:Planet) RETURN p
+MATCH (:Actor)-[*2]->(p:Planet) RETURN p
+MATCH (c:Character)-[:COMPANION_OF*1..2]-(:Character) RETURN c
+MATCH (e:Planet{name:'Earth'}),(g:Planet{name:'Gallifrey'}),p=SHORTESTPATH((e)-[*..15]-(g)) RETURN p
+MATCH (a:Character) OPTIONAL MATCH (a)-[r:COMES_FROM]->() RETURN r
+
+DDL:
+CREATE (n:Actor{name:'Peter Capaldi'}) RETURN n
+CREATE p=(:Actor{name: 'Peter Capaldi'})-[:APPEARED_IN]->(:Episode{name:'The Tiem of The Doctor'}) RETURN p
+--Need to delete relationships first
+MATCH (m:Actor{name:'Matt Smith'}) DELETE m
+--Trash it an all relationships
+MATCH (m:Actor{name:'Matt Smith'})-[r]-() DELETE matt, r
+--Though I have already deleted it
+MATCH (m:Actor{name:'Matt Smith'}) SET m.salary=10000000,m.active=TRUE
+--Delete an attribute:
+MATCH (m:Actor{name:'Matt Smith'}) SET m.salary=NULL
+--Or use:
+MATCH (m:Actor{name:'Matt Smith'}) REMOVE m:salary
+
+--Set all attributes to same as another node
+MATCH (m:Actor{name:'Matt Smith'}),(c:Actor{name:'Christopher Eccleston'}) SET m = c
+--Assign a label:
+MATCH (m:Actor{name:'Matt Smith'}) SET m:DOCTOR
+--Remove label:
+MATCH (m:Actor{name:'Matt Smith'}) REMOVE m:DOCTOR
